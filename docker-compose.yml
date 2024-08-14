@@ -1,15 +1,38 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
-    container_name: nest-clean-pg
     image: postgres
+    restart: always
+    container_name: nest-api-db
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: nest-clean
-      PGDATA: /data/postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=nest-clean
+      - PGDATA=data/postgres
     volumes:
       - ./data/pg:/data/postgres
+    networks:
+      - nest-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-api
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./src:/app/src
+    networks:
+      - nest-network
+
+networks:
+  nest-network:
+    driver: bridge
